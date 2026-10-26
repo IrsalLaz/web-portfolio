@@ -1,0 +1,46 @@
+---
+title: Campaign & Rewards Engine
+category: Product · Rewards engine
+order: 5
+summary: One rule engine for vouchers, cashback, referrals and point grants, targeted per client company and safe against rewarding failed transactions.
+description: A high-level summary of a campaign engine for an earned-wage-access app — one rule engine, two-phase cashback, referral abuse rules and resumable bulk point grants.
+card:
+  problem: Marketing needed vouchers, cashback, referrals and point grants targeted per client company, with quotas and per-user limits.
+  role: Designed and built as a team member
+  tech: [Laravel, MySQL, Redis queues]
+  highlight: One rule engine for every campaign type, and cashback credited only after the withdrawal succeeds.
+facts:
+  - label: Role
+    value: Designed and built as a team member (work began during my internship)
+  - label: Product
+    value: Duluin Gajian (earned-wage-access app)
+  - label: Stack
+    value: Laravel, MySQL, Redis queues (Horizon)
+---
+
+## Overview
+
+Duluin Gajian lets employees withdraw part of their earned wages early and pay bills in the app. The campaign engine lets marketing and operations run promotions — vouchers, cashback, referral programmes and bulk point grants — for specific client companies, without help from engineering.
+
+## My contribution
+
+- Designed and built the campaign engine as part of the team, starting during my internship.
+- Implemented the campaign types, their targeting, and the points ledger behind them.
+
+## Skills applied
+
+- **Rule engine design.** Every campaign type goes through the same checks: active period, total quota, per-user limit, minimum amount and product type.
+- **Two-phase rewards.** Usage is recorded when a transaction is requested, and rewards are credited only after it succeeds, so failed transactions earn nothing.
+- **Abuse prevention.** Referral rules block self-referral and repeat redemption.
+- **Resumable bulk jobs.** Bulk point grants run as queued jobs that continue where they stopped if interrupted.
+- **Auditability.** A points ledger records every credit and debit with its status and expiry.
+- **Access control.** Campaign management actions are protected by role-based permissions.
+
+## Outcome
+
+- Marketing and operations can run targeted promotions without engineering help.
+- Every usage, referral and point movement is recorded, so rewards can be audited.
+
+## Tech stack
+
+Laravel, Sanctum, Spatie Permission · MySQL · Redis queues (Horizon)

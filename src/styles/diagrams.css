@@ -1,0 +1,199 @@
+/* Shared by FlowDiagram and SequenceDiagram (inline SVG inherits these). See design.md §5. */
+.diagram,
+.shot {
+  margin: 2rem 0;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.diagram-scroll {
+  overflow-x: auto;
+  padding: 18px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.diagram-scroll svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-inline: auto;
+}
+
+.diagram figcaption,
+.shot figcaption {
+  border-top: 1px solid var(--line);
+  padding: 12px 18px;
+  font-size: 0.86rem;
+  color: var(--muted);
+  background: var(--surface);
+}
+
+@media (max-width: 720px) {
+  .diagram figcaption::before {
+    content: "Swipe to see the whole diagram. ";
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--accent-ink);
+  }
+
+  :lang(id) .diagram figcaption::before {
+    content: "Geser untuk melihat seluruh diagram. ";
+  }
+}
+
+/* Thumbnail variant (project panel) */
+.diagram-thumb {
+  display: block;
+  padding: 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--accent-line);
+}
+
+.diagram-thumb svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+}
+
+.diagram svg text,
+.diagram-thumb svg text {
+  font-family: var(--font-sans);
+  fill: var(--d-text);
+}
+
+.d-shape {
+  fill: var(--d-node);
+  stroke: var(--d-node-border);
+  stroke-width: 1;
+}
+
+.d-shape-rim {
+  fill: none;
+  stroke: var(--d-node-border);
+  stroke-width: 1;
+}
+
+.d-node-accent .d-shape {
+  fill: var(--d-accent);
+  stroke: var(--d-accent-border);
+  stroke-width: 1.25;
+}
+
+.d-node-store .d-shape,
+.d-node-queue .d-shape {
+  fill: var(--d-store);
+}
+
+.d-node-external .d-shape {
+  stroke-dasharray: 4 3;
+}
+
+svg .d-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+svg .d-sub {
+  font-family: var(--font-mono) !important;
+  font-size: 10.5px;
+  fill: var(--d-sub) !important;
+}
+
+.d-edge,
+.d-msg {
+  fill: none;
+  stroke: var(--d-line);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+
+.d-edge-dashed,
+.d-msg-dashed {
+  stroke-dasharray: 5 4;
+}
+
+.d-arrowhead {
+  fill: var(--d-line);
+}
+
+.d-arrowhead-open {
+  fill: none;
+  stroke: var(--d-line);
+  stroke-width: 1.4;
+}
+
+.d-edge-label-bg {
+  fill: var(--d-canvas);
+}
+
+.diagram-thumb .d-edge-label-bg {
+  fill: var(--surface);
+}
+
+svg .d-edge-label {
+  font-size: 11px;
+  fill: var(--d-sub) !important;
+}
+
+svg .d-msg-label {
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+}
+
+.d-lifeline {
+  stroke: var(--d-node-border);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.d-note {
+  fill: var(--d-note);
+  stroke: var(--d-note-border);
+  stroke-width: 1;
+}
+
+svg .d-note-text {
+  font-size: 11.5px;
+}
+
+.d-divider {
+  stroke: var(--d-group);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.d-divider-bg {
+  fill: var(--surface);
+  stroke: var(--line);
+}
+
+svg .d-divider-label {
+  font-family: var(--font-mono) !important;
+  font-size: 10.5px;
+  fill: var(--d-sub) !important;
+}
+
+.d-group {
+  fill: none;
+  stroke: var(--d-group);
+  stroke-width: 1;
+  stroke-dasharray: 6 5;
+}
+
+svg .d-group-label {
+  font-family: var(--font-mono) !important;
+  font-size: 10.5px;
+  fill: var(--d-sub) !important;
+}
+
+/* Screenshots */
+.shot a {
+  display: block;
+  background: #f4f5f7;
+}
+
+.shot img {
+  width: 100%;
+}

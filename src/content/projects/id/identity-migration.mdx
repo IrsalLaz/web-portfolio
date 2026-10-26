@@ -1,0 +1,52 @@
+---
+title: "Memisahkan Identitas dari Monolit"
+category: "Sistem terdistribusi · Identitas"
+order: 1
+summary: "Memindahkan identitas, token, dan permission ke auth service tersendiri dengan pola berbasis event, sementara service di sekitarnya tetap berjalan."
+description: "Ringkasan tingkat tinggi dari migrasi identitas yang saya rancang dan implementasikan — saga berbasis event dengan outbox dan inbox, change data capture, otorisasi di gateway, dan cutover berbasis feature flag yang bisa di-rollback."
+card:
+  problem: "Seiring makin banyak service yang dipisahkan, platform membutuhkan satu otoritas untuk identitas, token, dan permission."
+  role: "Merancang dan mengimplementasikan"
+  tech: [Node.js, Go, RabbitMQ, MySQL, Redis]
+  highlight: "Alur registrasi berbasis event dengan transactional outbox dan inbox, serta cutover yang bisa dikembalikan lewat feature flag."
+facts:
+  - label: "Peran"
+    value: "Merancang dan mengimplementasikan (proyek tim)"
+  - label: "Cakupan saya"
+    value: "Auth service (Node.js), perubahan pendukung di service Go dan codebase Laravel, serta otorisasi di API gateway"
+  - label: "Periode"
+    value: "2026"
+  - label: "Stack"
+    value: "Node.js (Fastify, Sequelize), Go (GORM), Laravel, MySQL 8, RabbitMQ, Redis, JWT"
+---
+
+## Ringkasan
+
+Produk-produk Duluin, termasuk Duluin Gajian dan Duluin Stake, berjalan di codebase Laravel bersama service yang lebih baru berbasis Go dan Node.js. Proyek ini menjadikan auth service tersendiri sebagai satu-satunya otoritas untuk identitas, token, dan permission, tanpa mengganggu service yang bergantung padanya.
+
+## Kontribusi saya
+
+- Menulis analisis dan rencana migrasi bertahap.
+- Mengimplementasikan sisi auth service: model data identitas, sinkronisasi data, registrasi berbasis event, dan kontrol cutover.
+- Mengimplementasikan publisher, consumer, dan perubahan data yang sesuai di service Go dan codebase Laravel.
+- Memindahkan pengecekan otorisasi ke API gateway.
+- Membangun halaman admin untuk memantau progres migrasi.
+
+## Keahlian yang diterapkan
+
+- **Desain berbasis event.** Registrasi melibatkan lebih dari satu service, sehingga dijalankan sebagai choreography saga di RabbitMQ: transactional outbox, deduplikasi inbox, consumer yang idempotent, dan penanganan dead-letter.
+- **Konsistensi tanpa transaksi terdistribusi.** Penulisan data memakai compensating action dan upsert yang idempotent, bukan transaksi lintas database.
+- **Change data capture.** Change data capture berbasis trigger menjaga replica tetap sinkron tanpa mengubah setiap jalur kode yang menulis data tersebut.
+- **Otorisasi terpusat.** Pengecekan permission dipindahkan ke API gateway dan tetap kompatibel dengan role dan permission Laravel yang sudah ada.
+- **Autentikasi antar-service.** Token bertanda tangan dengan masa berlaku singkat untuk panggilan antar-service, diverifikasi lewat JWKS atau token introspection, dan menolak akses saat ragu (fail closed).
+- **Rollout yang bisa dikembalikan.** Data dimigrasikan secara bertahap dan cutover dikendalikan lewat feature flag, sehingga sebuah langkah bisa dikembalikan tanpa migrasi balik.
+
+## Hasil
+
+- Satu otoritas untuk identitas, token, dan permission, dirancang agar service yang ada tetap berjalan selama migrasi.
+- Setiap bagian dicakup test otomatis di Node.js, Go, dan PHP, ditambah pengujian end-to-end untuk alur utama.
+- Pengalaman langsung dengan trade-off sistem berbasis event: eventual consistency, idempotency, dan pengoperasian message queue.
+
+## Tech stack
+
+Node.js, Fastify, Sequelize · Go, GORM · Laravel, Sanctum, Spatie Permission · MySQL 8 · RabbitMQ · Redis · JWT, JWKS · `node --test`, `go test`, PHPUnit

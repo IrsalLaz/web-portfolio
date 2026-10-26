@@ -1,0 +1,52 @@
+---
+title: "Keamanan Auth & API untuk Integrasi Partner"
+category: "Keamanan · Platform API"
+order: 2
+summary: "Akses API yang terbatas dan bisa dirotasi untuk aplikasi partner, two-factor authentication untuk admin, dan rate limiting yang menghentikan penyalahgunaan tanpa memblokir kantor yang berbagi IP."
+description: "Ringkasan tingkat tinggi dari pekerjaan saya pada kredensial API partner dengan rotasi berbasis approval, two-factor authentication TOTP, dan rate limiting token bucket."
+card:
+  problem: "Aplikasi partner membutuhkan akses API yang terbatas dan bisa dirotasi per perusahaan klien, dan akun admin membutuhkan faktor kedua."
+  role: "Software engineer di tim auth"
+  tech: [Fastify, Laravel, Redis, OAuth2, TOTP]
+  highlight: "Kredensial client dan tenant dengan rotasi key berbasis approval, serta rate limiting token bucket di gateway."
+facts:
+  - label: Peran
+    value: "Software engineer di tim auth (proyek tim)"
+  - label: Cakupan saya
+    value: "Manajemen kredensial partner, 2FA untuk admin, dan rate limiting beserta tooling admin-nya; berkontribusi pada desain OAuth2 dan PIN transaksi"
+  - label: Periode
+    value: "2025 – 2026"
+  - label: Stack
+    value: "Node.js (Fastify), Laravel, Redis, MySQL, OAuth2, JWT, TOTP"
+---
+
+## Ringkasan
+
+Aplikasi partner memanggil API Duluin atas nama perusahaan klien. Pekerjaan ini mencakup cara partner mendapatkan akses, cara akun admin dilindungi, dan cara endpoint autentikasi dilindungi dari penyalahgunaan.
+
+## Kontribusi saya
+
+- Bersama tim, berkontribusi pada desain auth service dan alur OAuth2 client credentials untuk aplikasi pihak ketiga.
+- Membangun manajemen kredensial client dan tenant di dashboard admin, termasuk rotasi key berbasis approval.
+- Menambahkan two-factor authentication TOTP ke dashboard admin.
+- Membangun rate limiting di API gateway dan auth service, beserta tooling admin untuk memeriksa dan me-reset limit.
+- Bersama tim mengerjakan PIN transaksi.
+
+## Keahlian yang diterapkan
+
+- **OAuth2.** Grant client credentials dan refresh token, scope, dan revocation.
+- **Siklus hidup kredensial.** Secret disimpan sebagai hash, key disamarkan secara default, rotasi disetujui oleh orang kedua, dan revocation berlaku di semua tempat sekaligus.
+- **Two-factor authentication.** TOTP dengan recovery code, secret yang dienkripsi, dan penguncian akun setelah kegagalan berulang.
+- **Rate limiting.** Token bucket per client di gateway, dibagikan antar-instance lewat Redis, serta limit yang lebih ketat untuk endpoint auth yang sensitif. Kunci limit dirancang agar pengguna yang berbagi IP kantor tidak ikut terblokir karena satu orang.
+- **Tooling operasional.** Admin bisa memeriksa dan me-reset limit tanpa deploy.
+
+## Hasil
+
+- Aplikasi partner terintegrasi lewat kredensial yang terbatas dan bisa dirotasi; [integrasi klaim lintas aplikasi](/id/projects/claim-integration) berjalan di atasnya.
+- Tim operasional bisa membuat, merotasi, dan menonaktifkan kredensial partner dari dashboard tanpa bantuan engineering.
+- Akun admin dilindungi faktor kedua.
+- Trafik yang menyalahgunakan sistem dibatasi dengan respons `429` yang jelas.
+
+## Tech stack
+
+Node.js, Fastify · Laravel, Sanctum, Spatie Permission · Redis · MySQL · OAuth2 · JWT · TOTP

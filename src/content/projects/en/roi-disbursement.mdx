@@ -1,0 +1,46 @@
+---
+title: ROI Calculation & Bank Disbursement
+category: Fintech · Payouts
+order: 3
+summary: Calculating periodic investor returns and paying them through a bank API, after role-based approval.
+description: A high-level summary of an investor payout flow — locked period calculations, role-based approval and bank API disbursement.
+card:
+  problem: Investor returns needed to be calculated each period and paid through an approved, auditable flow.
+  role: Person in charge (PIC)
+  tech: [Laravel, MySQL, Redis queues, Bank API]
+  highlight: Calculations are locked before approval, and every transfer passes role-based approval and bank account validation before the bank API is called.
+facts:
+  - label: Role
+    value: Person in charge (PIC); designed the calculation and disbursement flow with the investment team
+  - label: Product
+    value: Duluin Stake (investor platform), operated from the internal dashboard
+  - label: Stack
+    value: Laravel, MySQL, Redis queues (Horizon), bank disbursement API
+---
+
+## Overview
+
+Investors in Duluin Stake earn periodic returns. This system calculates those returns, takes them through approval and pays them through a bank API.
+
+## My contribution
+
+- As PIC, designed the calculation and disbursement flow together with the investment team.
+- Built the period calculation, the approval workflow, the bank API integration, and automatic ledger records and transfer receipts.
+- Refactored the payout model so one payout can be paid as several transfers.
+
+## Skills applied
+
+- **Ledger-based calculation.** Returns are rolled up from the ledger for each period and locked before approval, so the amount that is approved is the amount that gets paid.
+- **Role-based approval.** Viewing, requesting, approving and disbursing need separate permissions, and a password must be re-entered before money moves.
+- **Bank API integration.** Destination accounts are validated by the bank before approval, and transfers run as queued jobs with progress tracking, so large batches don't block the page.
+- **Data snapshots.** Bank details are copied onto each transfer, so later profile changes can't alter an approved payment.
+- **Safe scheduled jobs.** Recurring jobs refuse to apply the same batch twice.
+
+## Outcome
+
+- Payouts run through a calculated, approved and bank-integrated flow, which significantly reduced payout time.
+- Ledger records and transfer receipts are created automatically.
+
+## Tech stack
+
+Laravel, Sanctum, Spatie Permission · MySQL · Redis queues (Horizon) · bank disbursement API · Excel export

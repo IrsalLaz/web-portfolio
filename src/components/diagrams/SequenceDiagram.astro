@@ -1,0 +1,171 @@
+---
+import type { HTMLAttributes } from "astro/types";
+// Data-driven, theme-aware sequence diagram rendered as inline SVG.
+import type { SequenceSpec } from "./types";
+type Props = SequenceSpec & { variant?: "full" | "thumb" };
+
+const { id, title, desc, participants, steps, colWidth = 180, minWidth = 640, caption, variant = "full" } = Astro.props;
+const thumb = variant === "thumb";
+
+const padX = 16;
+const headY = 12;
+const headH = 50;
+const width = padX * 2 + colWidth * participants.length;
+const cx = new Map(participants.map((p, i) => [p.id, padX + colWidth * (i + 0.5)]));
+const boxW = Math.min(colWidth - 20, 168);
+
+type Row =
+  | { type: "msg"; y: number; x1: number; x2: number; label: string; kind: string; self: boolean }
+  | { type: "note"; y: number; x: number; w: number; h: number; lines: string[] }
+  | { type: "divider"; y: number; label: string };
+
+let cursor = headY + headH + 22;
+const rows: Row[] = [];
+for (const s of steps) {
+  if ("divider" in s) {
+    rows.push({ type: "divider", y: cursor + 14, label: s.divider });
+    cursor += 34;
+  } else if ("note" in s) {
+    const lines = s.note.split("\n");
+    const ids = Array.isArray(s.over) ? s.over : [s.over];
+    const xs = ids.map((i) => cx.get(i) as number);
+    const left = Math.min(...xs) - (ids.length > 1 ? colWidth * 0.42 : colWidth * 0.46);
+    const right = Math.max(...xs) + (ids.length > 1 ? colWidth * 0.42 : colWidth * 0.46);
+    const h = 14 + lines.length * 16;
+    rows.push({ type: "note", y: cursor + 4, x: left, w: right - left, h, lines });
+    cursor += h + 14;
+  } else {
+    const x1 = cx.get(s.from) as number;
+    const x2 = cx.get(s.to) as number;
+    const self = s.from === s.to;
+    rows.push({ type: "msg", y: cursor + 22, x1, x2, label: s.label, kind: s.kind ?? "call", self });
+    cursor += self ? 58 : 42;
+  }
+}
+const height = cursor + 14;
+const lifeTop = headY + headH;
+const Wrapper = thumb ? "div" : "figure";
+const wrapperProps = thumb ? { class: "diagram-thumb" } : { class: "diagram", "aria-labelledby": `${id}-cap` };
+const innerProps: HTMLAttributes<"div"> = thumb
+  ? {}
+  : { class: "diagram-scroll", tabindex: "0", role: "region", "aria-label": `${title} (scrollable diagram)` };
+---
+
+<Wrapper {...wrapperProps}>
+  <div {...innerProps}>
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      width={width}
+      height={height}
+      style={thumb ? undefined : `min-width:${minWidth}px`}
+      role="img"
+      aria-labelledby={`${id}-title ${id}-desc`}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <title id={`${id}-title`}>{title}</title>
+      <desc id={`${id}-desc`}>{desc}</desc>
+      <defs>
+        <marker id={`${id}-solid`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" class="d-arrowhead"></path>
+        </marker>
+        <marker id={`${id}-open`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M1,1 L9,5 L1,9" class="d-arrowhead-open"></path>
+        </marker>
+      </defs>
+
+      {
+        participants.map((p) => (
+          <line
+            x1={cx.get(p.id)}
+            y1={lifeTop}
+            x2={cx.get(p.id)}
+            y2={height - 6}
+            class="d-lifeline"
+          />
+        ))
+      }
+
+      {
+        participants.map((p) => {
+          const x = (cx.get(p.id) as number) - boxW / 2;
+          return (
+            <g class="d-node d-node-default">
+              <rect x={x} y={headY} width={boxW} height={headH} rx="8" class="d-shape" />
+              <text x={cx.get(p.id)} y={headY + (p.sub ? 22 : 30)} class="d-label" text-anchor="middle">
+                {p.label}
+              </text>
+              {p.sub && (
+                <text x={cx.get(p.id)} y={headY + 39} class="d-sub" text-anchor="middle">
+                  {p.sub}
+                </text>
+              )}
+            </g>
+          );
+        })
+      }
+
+      {
+        rows.map((r) => {
+          if (r.type === "divider") {
+            const lw = r.label.length * 6.4 + 18;
+            return (
+              <g>
+                <line x1={padX} y1={r.y} x2={width - padX} y2={r.y} class="d-divider" />
+                <rect x={width / 2 - lw / 2} y={r.y - 10} width={lw} height="20" rx="10" class="d-divider-bg" />
+                <text x={width / 2} y={r.y + 4} class="d-divider-label" text-anchor="middle">
+                  {r.label}
+                </text>
+              </g>
+            );
+          }
+          if (r.type === "note") {
+            return (
+              <g>
+                <rect x={r.x} y={r.y} width={r.w} height={r.h} rx="6" class="d-note" />
+                {r.lines.map((l, i) => (
+                  <text x={r.x + r.w / 2} y={r.y + 20 + i * 16} class="d-note-text" text-anchor="middle">
+                    {l}
+                  </text>
+                ))}
+              </g>
+            );
+          }
+          const marker = r.kind === "call" ? `url(#${id}-solid)` : `url(#${id}-open)`;
+          const dashed = r.kind === "reply";
+          if (r.self) {
+            const d = `M${r.x1},${r.y} H${r.x1 + 34} V${r.y + 20} H${r.x1 + 3}`;
+            return (
+              <g>
+                <path d={d} class:list={["d-msg", { "d-msg-dashed": dashed }]} marker-end={marker} fill="none" />
+                <text x={r.x1 + 42} y={r.y + 14} class="d-msg-label" text-anchor="start">
+                  {r.label}
+                </text>
+              </g>
+            );
+          }
+          const dir = r.x2 > r.x1 ? 1 : -1;
+          const x2 = r.x2 - dir * 3;
+          const lw = r.label.length * 6.1 + 12;
+          const mx = (r.x1 + r.x2) / 2;
+          return (
+            <g>
+              <line
+                x1={r.x1}
+                y1={r.y}
+                x2={x2}
+                y2={r.y}
+                class:list={["d-msg", { "d-msg-dashed": dashed }]}
+                marker-end={marker}
+              />
+              <rect x={mx - lw / 2} y={r.y - 20} width={lw} height="16" rx="3" class="d-edge-label-bg" />
+              <text x={mx} y={r.y - 8} class="d-msg-label" text-anchor="middle">
+                {r.label}
+              </text>
+            </g>
+          );
+        })
+      }
+    </svg>
+  </div>
+  {!thumb && <figcaption id={`${id}-cap`}>{caption ?? title}</figcaption>}
+</Wrapper>

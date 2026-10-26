@@ -1,0 +1,112 @@
+---
+// 1200x630 card captured into public/og.png by scripts/og-image.mjs. Not linked or indexed.
+import "@fontsource/inter/400.css";
+import "@fontsource/space-grotesk/600.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+import { site, copy } from "../data/site";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>OG image</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        background: #f7f7f5;
+        color: #111;
+        font-family: "Inter", sans-serif;
+      }
+      .card {
+        box-sizing: border-box;
+        width: 1200px;
+        height: 630px;
+        padding: 64px 80px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .brand {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 600;
+        font-size: 44px;
+        letter-spacing: -0.04em;
+      }
+      .brand span {
+        color: #f97316;
+      }
+      .seg {
+        display: flex;
+        border: 1.5px solid #2a2a28;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 15px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #5f5f5c;
+      }
+      .seg span {
+        padding: 12px 20px;
+      }
+      .seg span:first-child {
+        background: #111;
+        color: #f7f7f5;
+      }
+      h1 {
+        align-self: center;
+        margin: 0;
+        font-weight: 400;
+        font-size: 68px;
+        line-height: 1.06;
+        letter-spacing: -0.045em;
+        color: #3d3d3b;
+        max-width: 900px;
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 20px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #f97316;
+      }
+      .muted {
+        color: #6e6e6a;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="top">
+        <div class="brand">Irsal<span>.</span></div>
+        <div class="seg"><span>Projects</span><span>Experience</span><span>Skills</span></div>
+      </div>
+      <h1>{copy.en.headline}</h1>
+      <div class="foot">
+        <span class="status"><span class="dot"></span>{site.name}</span>
+        <span class="muted">Go · Node.js · Laravel · RabbitMQ</span>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "irsal-lazuard-portfolio",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal portfolio and CV of Irsal Lazuard Izzatillah, Software Engineer.",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "og": "node scripts/og-image.mjs",
+    "cv:pdf": "node scripts/cv-pdf.mjs",
+    "cv:docx": "node --experimental-strip-types --no-warnings scripts/cv-docx.mjs",
+    "build:assets": "astro build && node scripts/og-image.mjs && node scripts/cv-pdf.mjs && node --experimental-strip-types --no-warnings scripts/cv-docx.mjs && astro build"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "4.3.14",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/space-grotesk": "5.3.0",
+    "astro": "5.18.2",
+    "sharp": "0.34.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "docx": "9.5.1",
+    "playwright-core": "1.56.1",
+    "typescript": "5.9.3"
+  }
+}

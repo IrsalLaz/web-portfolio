@@ -1,0 +1,52 @@
+---
+title: Auth & API Security for Partner Integrations
+category: Security · API platform
+order: 2
+summary: Scoped, rotatable API access for partner apps, two-factor authentication for admins, and rate limiting that stops abuse without blocking shared offices.
+description: A high-level summary of my work on partner API credentials with approval-based rotation, TOTP two-factor authentication and token-bucket rate limiting.
+card:
+  problem: Partner apps needed scoped, rotatable API access per client company, and admin accounts needed a second factor.
+  role: Software engineer on the auth team
+  tech: [Fastify, Laravel, Redis, OAuth2, TOTP]
+  highlight: Client and tenant credentials with approval-based key rotation, and token-bucket rate limiting at the gateway.
+facts:
+  - label: Role
+    value: Software engineer on the auth team (team project)
+  - label: My scope
+    value: Partner credential management, admin 2FA, and rate limiting with its admin tooling; contributed to the OAuth2 design and the transaction PIN
+  - label: Period
+    value: 2025 – 2026
+  - label: Stack
+    value: Node.js (Fastify), Laravel, Redis, MySQL, OAuth2, JWT, TOTP
+---
+
+## Overview
+
+Partner applications call Duluin's APIs on behalf of client companies. This work covers how those partners get access, how admin accounts are protected, and how authentication endpoints are protected from abuse.
+
+## My contribution
+
+- Contributed, as part of the team, to the design of the auth service and its OAuth2 client-credentials flow for third-party apps.
+- Built client and tenant credential management in the admin dashboard, including approval-based key rotation.
+- Added TOTP two-factor authentication to the admin dashboard.
+- Built rate limiting in the API gateway and the auth service, plus admin tooling for inspecting and resetting limits.
+- Worked with the team on the transaction PIN.
+
+## Skills applied
+
+- **OAuth2.** Client-credentials and refresh-token grants, scopes, and revocation.
+- **Credential lifecycle.** Secrets stored as hashes, keys masked by default, rotation approved by a second person, and revocation that takes effect everywhere at once.
+- **Two-factor authentication.** TOTP with recovery codes, encrypted secrets, and a lockout after repeated failures.
+- **Rate limiting.** A token bucket per client in the gateway, shared across instances through Redis, and stricter limits on sensitive auth endpoints. Limits are keyed so that users who share an office IP aren't blocked because of one person.
+- **Operational tooling.** Admins can inspect and reset limits without a deploy.
+
+## Outcome
+
+- Partner apps integrate through scoped, rotatable credentials; the [cross-app claim integration](/projects/claim-integration) runs on them.
+- Operations can create, rotate and deactivate partner credentials from the dashboard without engineering help.
+- Admin accounts are protected by a second factor.
+- Abusive traffic is throttled with clear `429` responses.
+
+## Tech stack
+
+Node.js, Fastify · Laravel, Sanctum, Spatie Permission · Redis · MySQL · OAuth2 · JWT · TOTP

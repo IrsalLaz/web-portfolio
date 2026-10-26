@@ -1,0 +1,46 @@
+---
+title: "Perhitungan ROI & Pencairan via Bank"
+category: "Fintech · Payout"
+order: 3
+summary: "Menghitung imbal hasil investor per periode dan membayarkannya lewat API bank setelah approval berbasis peran."
+description: "Ringkasan tingkat tinggi dari alur payout investor — perhitungan per periode yang dikunci, approval berbasis peran, dan pencairan lewat API bank."
+card:
+  problem: "Imbal hasil investor perlu dihitung setiap periode dan dibayarkan lewat alur yang disetujui dan bisa diaudit."
+  role: "Person in charge (PIC)"
+  tech: [Laravel, MySQL, Redis queues, Bank API]
+  highlight: "Perhitungan dikunci sebelum approval, dan setiap transfer melewati approval berbasis peran serta validasi rekening bank sebelum API bank dipanggil."
+facts:
+  - label: "Peran"
+    value: "Person in charge (PIC); merancang alur perhitungan dan pencairan bersama tim investasi"
+  - label: "Produk"
+    value: "Duluin Stake (platform investor), dioperasikan dari dashboard internal"
+  - label: "Stack"
+    value: "Laravel, MySQL, queue Redis (Horizon), API pencairan bank"
+---
+
+## Ringkasan
+
+Investor di Duluin Stake menerima imbal hasil secara berkala. Sistem ini menghitung imbal hasil tersebut, membawanya melewati approval, lalu membayarkannya lewat API bank.
+
+## Kontribusi saya
+
+- Sebagai PIC, merancang alur perhitungan dan pencairan bersama tim investasi.
+- Membangun perhitungan per periode, workflow approval, integrasi API bank, serta pencatatan ledger dan bukti transfer otomatis.
+- Melakukan refactor model payout agar satu payout bisa dibayarkan sebagai beberapa transfer.
+
+## Keahlian yang diterapkan
+
+- **Perhitungan berbasis ledger.** Imbal hasil direkap dari ledger untuk setiap periode dan dikunci sebelum approval, sehingga nominal yang disetujui adalah nominal yang dibayarkan.
+- **Approval berbasis peran.** Melihat, mengajukan, menyetujui, dan mencairkan membutuhkan permission yang terpisah, dan password harus dimasukkan ulang sebelum uang berpindah.
+- **Integrasi API bank.** Rekening tujuan divalidasi oleh bank sebelum approval, dan transfer berjalan sebagai queued job dengan pelacakan progres, sehingga batch besar tidak membuat halaman macet.
+- **Snapshot data.** Detail rekening disalin ke setiap transfer, sehingga perubahan profil di kemudian hari tidak bisa mengubah pembayaran yang sudah disetujui.
+- **Scheduled job yang aman.** Job berulang menolak menerapkan batch yang sama dua kali.
+
+## Hasil
+
+- Payout berjalan lewat alur yang terhitung, disetujui, dan terintegrasi dengan bank, sehingga waktu payout berkurang secara signifikan.
+- Pencatatan ledger dan bukti transfer dibuat secara otomatis.
+
+## Tech stack
+
+Laravel, Sanctum, Spatie Permission · MySQL · queue Redis (Horizon) · API pencairan bank · ekspor Excel

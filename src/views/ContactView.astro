@@ -1,0 +1,206 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site, copy } from "../data/site";
+import { useTranslations, type Lang } from "../i18n/ui";
+import { localizePath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
+const c = copy[lang].contact;
+---
+
+<BaseLayout lang={lang} title={t("contact.title")} description={t("contact.desc")}>
+  <header class="container page-head">
+    <p class="label label-accent">{t("contact.label")}</p>
+    <h1 class="page-title title">{c.heading}.</h1>
+    <p class="lead">{c.body}</p>
+  </header>
+
+  <section class="container contact" aria-label={t("contact.options")}>
+    <div class="mail-box">
+      <p class="label">{t("contact.email")}</p>
+      <a class="mail" href={`mailto:${site.email}`}>{site.email}</a>
+      <div class="mail-actions">
+        <a class="btn" href={`mailto:${site.email}`}>{t("contact.write")} <span aria-hidden="true">↗</span></a>
+        <button class="btn btn-outline" type="button" data-copy={site.email} data-ok={t("contact.copied")} data-fail={t("contact.copyFail")}>{t("contact.copy")}</button>
+        <span class="copied mono" role="status" aria-live="polite"></span>
+      </div>
+    </div>
+
+    <div class="md-rule" aria-hidden="true"></div>
+
+    <div class="elsewhere">
+      <h2>{t("contact.elsewhere")}</h2>
+      <ul class="links">
+        <li>
+          <a href={site.links.linkedin} target="_blank" rel="me noopener">
+            <span class="icon mono" aria-hidden="true">in</span>LinkedIn <span class="ext" aria-hidden="true">↗</span>
+          </a>
+        </li>
+        <li>
+          <a href={site.links.github} target="_blank" rel="me noopener">
+            <span class="icon mono" aria-hidden="true">gh</span>GitHub <span class="ext" aria-hidden="true">↗</span>
+          </a>
+        </li>
+        <li>
+          <a href={site.cv.pdf} download>
+            <span class="icon icon-solid mono" aria-hidden="true">cv</span>CV (PDF) <span class="ext" aria-hidden="true">↓</span>
+          </a>
+        </li>
+        <li>
+          <a href={site.cv.docx} download>
+            <span class="icon mono" aria-hidden="true">cv</span>CV (DOCX) <span class="ext" aria-hidden="true">↓</span>
+          </a>
+        </li>
+      </ul>
+      <p class="where mono"><span class="dot" aria-hidden="true"></span> {copy[lang].location} · UTC+7</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
+    const status = btn.parentElement?.querySelector(".copied");
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy ?? "");
+        if (status) status.textContent = btn.dataset.ok ?? "";
+      } catch {
+        if (status) status.textContent = btn.dataset.fail ?? "";
+      }
+      setTimeout(() => {
+        if (status) status.textContent = "";
+      }, 2500);
+    });
+  });
+</script>
+
+<style>
+  .title {
+    margin-top: 14px;
+  }
+
+  .contact {
+    display: grid;
+    gap: 40px;
+  }
+
+  @media (min-width: 960px) {
+    .contact {
+      grid-template-columns: minmax(0, 1.3fr) 1px minmax(0, 1fr);
+      gap: 0 clamp(40px, 5vw, 80px);
+      align-items: start;
+    }
+    .md-rule {
+      align-self: stretch;
+      background: var(--line);
+    }
+  }
+
+  @media (max-width: 959px) {
+    .md-rule {
+      display: none;
+    }
+  }
+
+  .mail-box {
+    border: 1px solid var(--frame);
+    padding: clamp(24px, 4vw, 40px);
+  }
+
+  .mail {
+    display: block;
+    margin: 14px 0 28px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.4rem, 2.2vw + 0.8rem, 2.4rem);
+    letter-spacing: -0.05em;
+    text-decoration: none;
+    word-break: break-all;
+  }
+
+  .mail:hover {
+    color: var(--accent-ink);
+  }
+
+  .mail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .copied {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+  }
+
+  .elsewhere h2 {
+    font-size: 1.6rem;
+    letter-spacing: -0.05em;
+    margin-bottom: 18px;
+  }
+
+  .links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .links a {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 56px;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+
+  .links a:hover {
+    color: var(--ink);
+  }
+
+  .links a:hover .ext {
+    color: var(--accent-ink);
+  }
+
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--frame);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+
+  .icon-solid {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .ext {
+    color: var(--faint);
+  }
+
+  .where {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 28px;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+</style>

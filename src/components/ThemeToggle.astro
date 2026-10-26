@@ -1,0 +1,56 @@
+---
+// Light is the default (design.md §2). Dark is opt-in and remembered.
+interface Props {
+  label?: string;
+}
+const { label = "Dark mode" } = Astro.props;
+---
+
+<button type="button" class="theme-toggle" aria-label={label} title={label} aria-pressed="false" data-theme-toggle>
+  <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.7"
+      stroke-linejoin="round"></path>
+  </svg>
+</button>
+
+<script>
+  const root = document.documentElement;
+  document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((btn) => {
+    const sync = () => btn.setAttribute("aria-pressed", String(root.getAttribute("data-theme") === "dark"));
+    sync();
+    btn.addEventListener("click", () => {
+      const dark = root.getAttribute("data-theme") !== "dark";
+      if (dark) root.setAttribute("data-theme", "dark");
+      else root.removeAttribute("data-theme");
+      try {
+        localStorage.setItem("theme", dark ? "dark" : "light");
+      } catch {
+        /* storage unavailable: the choice still applies to this page */
+      }
+      sync();
+    });
+  });
+</script>
+
+<style>
+  .theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--frame);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .theme-toggle:hover,
+  .theme-toggle[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+</style>

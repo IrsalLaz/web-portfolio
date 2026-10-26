@@ -1,0 +1,186 @@
+---
+import type { HTMLAttributes } from "astro/types";
+// Data-driven, theme-aware flow/component diagram rendered as inline SVG.
+import type { FlowEdge, FlowNode, FlowSpec, Side } from "./types";
+type Props = FlowSpec & { variant?: "full" | "thumb" };
+
+const { id, title, desc, width, height, minWidth = 640, nodes, edges, groups = [], caption, variant = "full" } = Astro.props;
+const thumb = variant === "thumb";
+const DEFAULT_W = 160;
+const DEFAULT_H = 56;
+
+const byId = new Map(nodes.map((n) => [n.id, { ...n, w: n.w ?? DEFAULT_W, h: n.h ?? DEFAULT_H }]));
+type N = FlowNode & { w: number; h: number };
+
+const center = (n: N) => ({ x: n.x + n.w / 2, y: n.y + n.h / 2 });
+const anchor = (n: N, s: Side): [number, number] => {
+  switch (s) {
+    case "l":
+      return [n.x, n.y + n.h / 2];
+    case "r":
+      return [n.x + n.w, n.y + n.h / 2];
+    case "t":
+      return [n.x + n.w / 2, n.y];
+    case "b":
+      return [n.x + n.w / 2, n.y + n.h];
+  }
+};
+
+function route(e: FlowEdge): [number, number][] {
+  if (e.points) return e.points;
+  const a = byId.get(e.from) as N;
+  const b = byId.get(e.to) as N;
+  const ca = center(a);
+  const cb = center(b);
+  const horizontal = Math.abs(cb.x - ca.x) >= Math.abs(cb.y - ca.y);
+  const fs: Side = e.fromSide ?? (horizontal ? (cb.x > ca.x ? "r" : "l") : cb.y > ca.y ? "b" : "t");
+  const ts: Side = e.toSide ?? (horizontal ? (cb.x > ca.x ? "l" : "r") : cb.y > ca.y ? "t" : "b");
+  const p1 = anchor(a, fs);
+  const p2 = anchor(b, ts);
+  const hA = fs === "l" || fs === "r";
+  const hB = ts === "l" || ts === "r";
+  if (hA && hB) {
+    if (Math.abs(p1[1] - p2[1]) < 1) return [p1, p2];
+    const mx = (p1[0] + p2[0]) / 2;
+    return [p1, [mx, p1[1]], [mx, p2[1]], p2];
+  }
+  if (!hA && !hB) {
+    if (Math.abs(p1[0] - p2[0]) < 1) return [p1, p2];
+    const my = (p1[1] + p2[1]) / 2;
+    return [p1, [p1[0], my], [p2[0], my], p2];
+  }
+  if (hA && !hB) return [p1, [p2[0], p1[1]], p2];
+  return [p1, [p1[0], p2[1]], p2];
+}
+
+function midpoint(pts: [number, number][]): [number, number] {
+  const segs = pts.slice(1).map((p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]));
+  let half = segs.reduce((s, l) => s + l, 0) / 2;
+  for (let i = 0; i < segs.length; i++) {
+    if (half <= segs[i]) {
+      const t = segs[i] === 0 ? 0 : half / segs[i];
+      return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * t, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t];
+    }
+    half -= segs[i];
+  }
+  return pts[pts.length - 1];
+}
+
+const routed = edges.map((e) => {
+  const pts = route(e);
+  const [lx, ly] = e.labelAt ?? midpoint(pts);
+  const lw = e.label ? e.label.length * 6.1 + 12 : 0;
+  return { e, d: "M" + pts.map((p) => p.join(",")).join(" L"), lx, ly, lw };
+});
+
+const renderNodes = [...byId.values()].map((n) => {
+  const lines = [n.label, ...(n.sub ? n.sub.split("\n") : [])];
+  const subCount = lines.length - 1;
+  const block = 16 + subCount * 14;
+  const top = n.y + n.h / 2 - block / 2 + 12;
+  return { n, subLines: lines.slice(1), labelY: top, subY0: top + 17 };
+});
+
+const cyl = (n: N) => {
+  const ry = 6;
+  const { x, y, w, h } = n;
+  return {
+    body: `M${x},${y + ry} A${w / 2},${ry} 0 0 1 ${x + w},${y + ry} V${y + h - ry} A${w / 2},${ry} 0 0 1 ${x},${y + h - ry} Z`,
+    rim: `M${x},${y + ry} A${w / 2},${ry} 0 0 0 ${x + w},${y + ry}`,
+  };
+};
+const Wrapper = thumb ? "div" : "figure";
+const wrapperProps = thumb ? { class: "diagram-thumb" } : { class: "diagram", "aria-labelledby": `${id}-cap` };
+const innerProps: HTMLAttributes<"div"> = thumb
+  ? {}
+  : { class: "diagram-scroll", tabindex: "0", role: "region", "aria-label": `${title} (scrollable diagram)` };
+---
+
+<Wrapper {...wrapperProps}>
+  <div {...innerProps}>
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      width={width}
+      height={height}
+      style={thumb ? undefined : `min-width:${minWidth}px`}
+      role="img"
+      aria-labelledby={`${id}-title ${id}-desc`}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <title id={`${id}-title`}>{title}</title>
+      <desc id={`${id}-desc`}>{desc}</desc>
+      <defs>
+        <marker
+          id={`${id}-arrow`}
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M0,0 L10,5 L0,10 z" class="d-arrowhead"></path>
+        </marker>
+      </defs>
+
+      {
+        groups.map((g) => (
+          <g>
+            <rect x={g.x} y={g.y} width={g.w} height={g.h} rx="12" class="d-group" />
+            <text x={g.x + 12} y={g.y + 18} class="d-group-label">
+              {g.label}
+            </text>
+          </g>
+        ))
+      }
+
+      {
+        routed.map(({ e, d }) => (
+          <path
+            d={d}
+            class:list={["d-edge", { "d-edge-dashed": e.dashed }]}
+            marker-end={`url(#${id}-arrow)`}
+            marker-start={e.both ? `url(#${id}-arrow)` : undefined}
+          />
+        ))
+      }
+
+      {
+        renderNodes.map(({ n, subLines, labelY, subY0 }) => (
+          <g class={`d-node d-node-${n.kind ?? "default"}`}>
+            {n.kind === "store" ? (
+              <>
+                <path d={cyl(n as N).body} class="d-shape" />
+                <path d={cyl(n as N).rim} class="d-shape-rim" />
+              </>
+            ) : (
+              <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={n.kind === "queue" ? 22 : 8} class="d-shape" />
+            )}
+            <text x={n.x + (n.w as number) / 2} y={labelY} class="d-label" text-anchor="middle">
+              {n.label}
+            </text>
+            {subLines.map((s, i) => (
+              <text x={n.x + (n.w as number) / 2} y={subY0 + i * 14} class="d-sub" text-anchor="middle">
+                {s}
+              </text>
+            ))}
+          </g>
+        ))
+      }
+
+      {
+        routed
+          .filter((r) => r.e.label)
+          .map(({ e, lx, ly, lw }) => (
+            <g>
+              <rect x={lx - lw / 2} y={ly - 10} width={lw} height="18" rx="4" class="d-edge-label-bg" />
+              <text x={lx} y={ly + 3.5} class="d-edge-label" text-anchor="middle">
+                {e.label}
+              </text>
+            </g>
+          ))
+      }
+    </svg>
+  </div>
+  {!thumb && <figcaption id={`${id}-cap`}>{caption ?? title}</figcaption>}
+</Wrapper>

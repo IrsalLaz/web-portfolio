@@ -1,0 +1,239 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import MasterDetailScript from "../components/MasterDetailScript.astro";
+import { experience, education, certifications } from "../data/experience";
+import { useTranslations, type Lang } from "../i18n/ui";
+import { localizePath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
+const roles = experience[lang];
+const edu = education[lang];
+
+const split = (p: string) => {
+  const parts = p.split("–").map((s) => s.trim());
+  return parts.length === 2 ? parts : [p, ""];
+};
+---
+
+<BaseLayout lang={lang} title={t("exp.title")} description={t("exp.desc")}>
+  <header class="container page-head">
+    <h1 class="page-title">{t("exp.title")}</h1>
+    <p class="lead">{t("exp.lead")}</p>
+  </header>
+
+  <section class="container" aria-label={t("exp.roles")}>
+    <div class="md" data-md>
+      <ul class="md-list" role="tablist" aria-orientation="vertical" aria-label={t("exp.roles")}>
+        {
+          roles.map((r, i) => (
+            <li role="presentation" id={r.key}>
+              <button
+                class="md-item"
+                role="tab"
+                id={`tab-${r.key}`}
+                data-key={r.key}
+                aria-selected={i === 0 ? "true" : "false"}
+                aria-controls={`panel-${r.key}`}
+                tabindex={i === 0 ? 0 : -1}
+              >
+                <span class="md-title">{r.short}</span>
+                <span class="label">{r.title}</span>
+                <span class:list={["chip", "period", { "chip-muted": !r.current }]}>
+                  <span class="dot" aria-hidden="true" />
+                  {r.period}
+                </span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="md-rule" aria-hidden="true"></div>
+
+      <div class="md-detail">
+        {
+          roles.map((r) => {
+            const [from, to] = split(r.period);
+            return (
+              <article class="panel" role="tabpanel" id={`panel-${r.key}`} aria-labelledby={`tab-${r.key}`} tabindex="0">
+                <div class="panel-head head-grid">
+                  <div>
+                    <p class="label label-accent">{r.title}</p>
+                    <h2 class="panel-title">{r.short}</h2>
+                    {r.company !== r.short && <p class="label legal">{r.company}</p>}
+                  </div>
+                  <dl class="period-box">
+                    <dt class="label">{t("exp.period")}</dt>
+                    <dd class="mono">
+                      <span>{from}</span>
+                      {to && <span class="to">{to}</span>}
+                    </dd>
+                    <dt class="visually-hidden">{t("exp.location")}</dt>
+                    <dd class="mono loc">{r.location}</dd>
+                  </dl>
+                </div>
+                <div class="panel-body">
+                  <p>{r.summary}</p>
+                  <p class="label">{t("exp.contributions")}</p>
+                  <ol class="numbered">
+                    {r.bullets.map((b, i) => (
+                      <li>
+                        <span class="n">{String(i + 1).padStart(2, "0")}</span>
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  {r.tech && (
+                    <ul class="techs" aria-label={t("exp.tech")}>
+                      {r.tech.map((t) => (
+                        <li>{t}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container section edu" aria-label={`${t("exp.education")} · ${t("exp.certs")}`}>
+    <div class="gbox">
+      <div class="gbox-head">
+        <h2>{t("exp.education")}</h2>
+        <span class="gbox-count">01</span>
+      </div>
+      <div class="gbox-body">
+        <p class="edu-degree">{edu.degree}</p>
+        <p class="mono edu-meta">{edu.school} · {edu.period}</p>
+      </div>
+    </div>
+    <div class="gbox">
+      <div class="gbox-head">
+        <h2>{t("exp.certs")} · {certifications.issuer}</h2>
+        <span class="gbox-count">{String(certifications.items.length).padStart(2, "0")}</span>
+      </div>
+      <ul class="gbox-body cert-list">
+        {certifications.items.map((c) => <li>{c}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <MasterDetailScript />
+</BaseLayout>
+
+<style>
+  .md-item .label {
+    display: block;
+  }
+
+  .period {
+    margin-top: 18px;
+  }
+
+  .legal {
+    margin-top: 12px;
+  }
+
+  .head-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  @media (min-width: 640px) {
+    .head-grid {
+      grid-template-columns: 1fr auto;
+      align-items: start;
+    }
+  }
+
+  .period-box {
+    margin: 0;
+    padding-left: 20px;
+    border-left: 1px solid var(--accent-line);
+  }
+
+  .period-box dd {
+    margin: 8px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+
+  .period-box .to::before {
+    content: "— ";
+    color: var(--accent-ink);
+  }
+
+  .period-box .loc {
+    color: var(--faint);
+    font-size: 0.7rem;
+  }
+
+  .panel-body > p:first-child {
+    font-size: 1.05rem;
+    color: var(--ink-2);
+    margin-bottom: 28px;
+  }
+
+  .panel-body .techs {
+    margin-top: 28px;
+  }
+
+  .edu {
+    display: grid;
+    gap: 20px;
+    padding-top: clamp(56px, 7vw, 96px);
+    padding-bottom: 0;
+  }
+
+  @media (min-width: 760px) {
+    .edu {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .gbox-body {
+    padding: 20px 18px 22px;
+    margin: 0;
+  }
+
+  .edu-degree {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.045em;
+    margin: 0 0 8px;
+  }
+
+  .edu-meta {
+    margin: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .cert-list {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+    color: var(--ink-2);
+  }
+
+  .cert-list li::before {
+    content: "▪ ";
+    color: var(--accent);
+  }
+</style>

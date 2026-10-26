@@ -1,0 +1,48 @@
+---
+title: "Pencairan Klaim Lintas Aplikasi"
+category: "Integrasi · Payroll"
+order: 4
+summary: "Menghubungkan aplikasi HRMS milik grup ke pipeline pencairan Duluin, sehingga klaim karyawan yang sudah disetujui dibayar secara otomatis dan statusnya dikirim kembali."
+description: "Ringkasan tingkat tinggi dari API klaim di Go yang diamankan dengan OAuth2, dengan request yang idempotent dan langkah persetujuan, dibangun di atas pipeline pencairan yang sudah ada."
+card:
+  problem: "Klaim yang disetujui HR di aplikasi HRMS milik grup membutuhkan jalur pembayaran yang aman dan otomatis, dengan status yang dikirim kembali."
+  role: "Person in charge (PIC)"
+  tech: [Go, Laravel, OAuth2, Horizon]
+  highlight: "API penerimaan yang diamankan dengan OAuth2 dan ID klaim yang idempotent, dibangun di atas pipeline pencairan yang sudah ada alih-alih membuat yang baru."
+facts:
+  - label: "Peran"
+    value: "Person in charge (PIC); merancang dan mengimplementasikan integrasi"
+  - label: "Sistem"
+    value: "Aplikasi HRMS milik grup, sebuah service Go, dan dashboard admin Laravel"
+  - label: "Stack"
+    value: "Go, Laravel, MySQL, queue Redis (Horizon), OAuth2"
+---
+
+## Ringkasan
+
+Karyawan mengajukan klaim reimbursement di aplikasi HRMS milik grup, lalu HR menyetujuinya. Integrasi ini mengambil klaim yang sudah disetujui, membawanya melewati persetujuan, membayarnya lewat pipeline pencairan Duluin yang sudah ada, lalu melaporkan status setiap klaim kembali.
+
+## Kontribusi saya
+
+- Sebagai PIC, merancang kontrak integrasi, siklus hidup klaim, dan alur persetujuan.
+- Mengimplementasikannya di sebuah service Go dan dashboard Laravel.
+- Menerapkan praktik keamanan tim: OAuth2 client credentials dengan scope, dan permission berbasis peran di setiap langkah persetujuan.
+- Menggunakan ulang pipeline pencairan yang sudah ada alih-alih membangun jalur pembayaran terpisah.
+
+## Keahlian yang diterapkan
+
+- **Desain integrasi.** Kontrak dan siklus hidup klaim yang disepakati antara dua aplikasi milik tim yang berbeda.
+- **OAuth2.** Client credentials dengan scope, yang kemudian beralih ke API key per tenant yang divalidasi auth service (lihat [Keamanan Auth & API](/id/projects/api-security)).
+- **Idempotency.** Setiap klaim membawa ID eksternal yang unik dan dibuat di dalam satu transaksi database, sehingga request yang diulang tidak bisa membuat klaim kedua.
+- **Kontrol konkurensi.** Row-level lock mencegah dua orang menyetujui klaim yang sama secara bersamaan.
+- **Menggunakan ulang, bukan membangun ulang.** Adapter kecil menghubungkan klaim ke pipeline pencairan yang sudah ada, sehingga klaim mewarisi queue dan audit trail-nya.
+- **Callback yang tangguh.** Callback status melakukan retry, dan callback yang gagal dicatat tanpa pernah membatalkan transfer yang sudah selesai.
+
+## Hasil
+
+- Klaim yang disetujui di aplikasi HRMS sampai ke rekening karyawan lewat alur yang otomatis dan teraudit, dengan status yang dilaporkan kembali.
+- Perusahaan partner bisa meninjau klaim sebelum dibayar.
+
+## Tech stack
+
+Go · Laravel, Sanctum, Spatie Permission, Horizon · MySQL · Redis · OAuth2

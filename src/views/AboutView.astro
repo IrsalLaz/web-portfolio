@@ -1,0 +1,202 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { copy } from "../data/site";
+import { waysOfWorking } from "../data/skills";
+import { education } from "../data/experience";
+import { useTranslations, type Lang } from "../i18n/ui";
+import { localizePath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
+const about = copy[lang].about;
+const edu = education[lang];
+
+const tilts = ["-1deg", "0.8deg", "-0.6deg", "1.1deg", "-0.9deg"];
+---
+
+<BaseLayout lang={lang} title={t("about.title")} description={t("about.desc")}>
+  <section class="container intro" aria-labelledby="about-title">
+    <p class="label label-accent">{t("about.label")}</p>
+    <h1 id="about-title" class="name">Irsal<span aria-hidden="true">.</span></h1>
+    <div class="bio">
+      <p class="bio-lead">{about[0]}</p>
+      {about.slice(1).map((p) => <p>{p}</p>)}
+    </div>
+  </section>
+
+  <section class="container section how" aria-labelledby="how-title">
+    <p class="label label-accent">{t("about.how")}</p>
+    <h2 id="how-title" class="h2">{t("about.howTitle")}</h2>
+    <ol class="notes">
+      {
+        waysOfWorking[lang].map((w, i) => (
+          <li class="note-card" style={`--tilt:${tilts[i % tilts.length]}`}>
+            <span class="note-head">
+              <span class="dot" aria-hidden="true" />
+              <span class="label">{t("about.step")} {String(i + 1).padStart(2, "0")}</span>
+            </span>
+            <h3>{w.title}.</h3>
+            <p>{w.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="container section now" aria-labelledby="now-title">
+    <div class="now-grid">
+      <div>
+        <p class="label label-accent">{t("about.now")}</p>
+        <h2 id="now-title" class="h2">{t("about.nowTitle")}</h2>
+        <p class="lead">{t("about.nowBody")}</p>
+        <p>
+          <a class="pill" href={L("/projects/identity-migration")}>{t("about.nowLink")} <span aria-hidden="true">→</span></a>
+        </p>
+      </div>
+      <div class="gbox edu">
+        <div class="gbox-head">
+          <h3>{t("about.education")}</h3>
+          <span class="gbox-count">01</span>
+        </div>
+        <div class="edu-body">
+          <p class="edu-degree">{edu.degree}</p>
+          <p class="mono edu-meta">{edu.school} · {edu.period}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro {
+    padding-top: clamp(48px, 7vw, 88px);
+  }
+
+  .name {
+    font-size: clamp(4rem, 9vw + 1rem, 6.5rem);
+    letter-spacing: -0.07em;
+    line-height: 0.95;
+    margin: 18px 0 clamp(32px, 4vw, 48px);
+  }
+
+  .name span {
+    color: var(--accent);
+  }
+
+  .bio {
+    max-width: 62ch;
+    padding-left: 24px;
+    border-left: 2px solid var(--accent-line);
+    color: var(--muted);
+  }
+
+  .bio-lead {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  .h2 {
+    font-size: clamp(2.2rem, 3.4vw + 1rem, 3.6rem);
+    letter-spacing: -0.06em;
+    margin: 14px 0 0;
+    max-width: 18ch;
+  }
+
+  .notes {
+    list-style: none;
+    margin: clamp(36px, 5vw, 56px) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 22px;
+  }
+
+  @media (min-width: 700px) {
+    .notes {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1080px) {
+    .notes {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .note-card {
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    box-shadow: 2px 2px 0 rgb(0 0 0 / 0.05);
+    padding: 22px 24px 26px;
+    transform: rotate(var(--tilt));
+  }
+
+  @media (max-width: 699px), (prefers-reduced-motion: reduce) {
+    .note-card {
+      transform: none;
+    }
+  }
+
+  .note-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .note-card h3 {
+    font-size: 1.8rem;
+    letter-spacing: -0.055em;
+    margin: 18px 0 10px;
+  }
+
+  .note-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.97rem;
+  }
+
+  .now {
+    border-top: 1px solid var(--line);
+  }
+
+  .now-grid {
+    display: grid;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (min-width: 900px) {
+    .now-grid {
+      grid-template-columns: 1.4fr 1fr;
+      gap: 64px;
+    }
+  }
+
+  .now .lead {
+    margin-bottom: 28px;
+  }
+
+  .edu-body {
+    padding: 20px 18px 22px;
+  }
+
+  .edu-degree {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.045em;
+    margin: 0 0 8px;
+  }
+
+  .edu-meta {
+    margin: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+</style>

@@ -1,0 +1,52 @@
+---
+title: Extracting Identity from a Monolith
+category: Distributed systems · Identity
+order: 1
+summary: Moving identity, tokens and permissions into a dedicated auth service with event-driven patterns, while the services around it keep working.
+description: A high-level summary of an identity migration I designed and implemented — event-driven sagas with outbox and inbox, change data capture, gateway-level authorization and a reversible, feature-flagged cutover.
+card:
+  problem: As more services were split out, the platform needed a single authority for identities, tokens and permissions.
+  role: Designed and implemented
+  tech: [Node.js, Go, RabbitMQ, MySQL, Redis]
+  highlight: An event-driven registration flow with a transactional outbox and inbox, and a cutover that can be switched back with a feature flag.
+facts:
+  - label: Role
+    value: Designed and implemented (team project)
+  - label: My scope
+    value: The auth service (Node.js), matching changes in Go services and the Laravel codebase, and authorization at the API gateway
+  - label: Period
+    value: "2026"
+  - label: Stack
+    value: Node.js (Fastify, Sequelize), Go (GORM), Laravel, MySQL 8, RabbitMQ, Redis, JWT
+---
+
+## Overview
+
+Duluin's products, including Duluin Gajian and Duluin Stake, run on a Laravel codebase alongside newer services in Go and Node.js. This project makes a dedicated auth service the single authority for identities, tokens and permissions, without interrupting the services that depend on them.
+
+## My contribution
+
+- Wrote the analysis and a phased migration plan.
+- Implemented the auth-service side: the identity data model, data synchronization, event-driven registration and the cutover controls.
+- Implemented the matching publishers, consumers and data changes in the Go services and the Laravel codebase.
+- Moved authorization checks into the API gateway.
+- Built an admin page for following the migration's progress.
+
+## Skills applied
+
+- **Event-driven design.** Registration spans more than one service, so it runs as a choreography saga on RabbitMQ: a transactional outbox, inbox deduplication, idempotent consumers and dead-letter handling.
+- **Consistency without distributed transactions.** Writes use compensating actions and idempotent upserts instead of transactions across databases.
+- **Change data capture.** Trigger-based change data capture keeps a replica in sync without changing every code path that writes the data.
+- **Centralized authorization.** Permission checks moved to the API gateway and stay compatible with the existing Laravel roles and permissions.
+- **Service authentication.** Short-lived, signed tokens for service-to-service calls, verified through JWKS or token introspection, and failing closed.
+- **Reversible rollout.** Data migrates gradually, and the cutover is controlled by feature flags, so a step can be switched back without a reverse migration.
+
+## Outcome
+
+- One authority for identity, tokens and permissions, designed so existing services keep working throughout the migration.
+- Every part covered by automated tests in Node.js, Go and PHP, plus end-to-end runs of the main flows.
+- Hands-on experience with the trade-offs of event-driven systems: eventual consistency, idempotency and operating message queues.
+
+## Tech stack
+
+Node.js, Fastify, Sequelize · Go, GORM · Laravel, Sanctum, Spatie Permission · MySQL 8 · RabbitMQ · Redis · JWT, JWKS · `node --test`, `go test`, PHPUnit

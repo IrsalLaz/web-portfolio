@@ -1,0 +1,300 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site, copy } from "../data/site";
+import { useTranslations, type Lang } from "../i18n/ui";
+import { localizePath } from "../i18n/utils";
+import { highlights } from "../data/highlights";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
+const c = copy[lang];
+
+const personLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: site.name,
+  jobTitle: site.title,
+  url: site.url,
+  email: `mailto:${site.email}`,
+  address: { "@type": "PostalAddress", addressLocality: "Bandung", addressCountry: "ID" },
+  worksFor: { "@type": "Organization", name: "Duluin (PT. Rasa Aksata Nusantara)" },
+  alumniOf: { "@type": "CollegeOrUniversity", name: "Telkom University" },
+  sameAs: [site.links.linkedin, site.links.github],
+};
+---
+
+<BaseLayout lang={lang}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(personLd)} />
+
+  <section class="hero container" aria-labelledby="hero-title">
+    <div class="hero-main">
+      <div class="portrait">
+        <p class="label status"><span class="dot" aria-hidden="true"></span>{site.roleLabel}</p>
+      </div>
+      <h1 id="hero-title" class="statement">{c.headline}</h1>
+      <p class="sub">{c.sub}</p>
+      <div class="ctas">
+        <a class="pill" href={L("/projects")}>{t("home.projects")} <span aria-hidden="true">→</span></a>
+        <a class="pill" href={L("/about")}>{t("home.about")} <span aria-hidden="true">→</span></a>
+        <a class="pill" href={site.cv.pdf} download>{t("home.cv")} <span aria-hidden="true">↓</span></a>
+      </div>
+    </div>
+
+    <aside class="avail" aria-label={t("home.available")}>
+      <p class="label status avail-label"><span class="dot dot-yellow" aria-hidden="true"></span>{t("home.available")}</p>
+      <div class="avail-card">
+        <p class="hello">{t("home.hello")}</p>
+        <p class="open mono">{t("home.openTo")}</p>
+        <p class="open-to">{c.openTo}</p>
+        <p class="clock mono" aria-hidden="true">
+          [ <span>{site.city}</span> <span class="dot"></span>
+          <time data-clock={site.timeZone}>--:--:--</time> ]
+        </p>
+        <p class="visually-hidden">{t("home.basedIn")} {c.location} (UTC+7).</p>
+      </div>
+    </aside>
+  </section>
+
+  <section class="section highlights container" aria-labelledby="hl-title">
+    <p class="label label-accent">{t("home.hl.label")}</p>
+    <h2 id="hl-title" class="hl-title">{t("home.hl.title")}</h2>
+    <p class="lead">{t("home.hl.lead")}</p>
+    <ol class="hl-grid">
+      {
+        highlights[lang].map((h, i) => (
+          <li class="hl">
+            <span class="n mono" aria-hidden="true">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <h3>{h.title}</h3>
+            <p>{h.body}</p>
+            <a href={L(`/projects/${h.project}`)} class="hl-link">
+              <span class="visually-hidden">{h.projectTitle} — </span>{t("home.hl.link")}&nbsp;<span aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLTimeElement>("[data-clock]").forEach((el) => {
+    const fmt = new Intl.DateTimeFormat("en-GB", {
+      timeZone: el.dataset.clock,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+    const tick = () => {
+      el.textContent = fmt.format(new Date());
+    };
+    tick();
+    setInterval(tick, 1000);
+  });
+</script>
+
+<style>
+  .hero {
+    display: grid;
+    gap: 56px;
+    align-items: center;
+    min-height: calc(100svh - var(--header-h));
+    padding-block: clamp(32px, 6vw, 72px);
+  }
+
+  @media (min-width: 1024px) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 80px;
+    }
+  }
+
+  .portrait {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: clamp(36px, 5vw, 56px);
+  }
+
+  .status {
+    gap: 10px;
+    padding-top: 2px;
+  }
+
+  .statement {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: clamp(2rem, 3.2vw + 0.75rem, 3rem);
+    letter-spacing: -0.045em;
+    line-height: 1.08;
+    color: var(--ink-2);
+    max-width: 19ch;
+  }
+
+  .sub {
+    margin: 20px 0 0;
+    max-width: 56ch;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 36px;
+  }
+
+  .avail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .avail-label {
+    color: var(--ink-2);
+  }
+
+  .avail-card {
+    width: 100%;
+    max-width: 360px;
+    border: 1.5px solid var(--frame);
+    padding: 44px 28px 28px;
+    text-align: center;
+  }
+
+  .hello {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2.6rem;
+    letter-spacing: -0.06em;
+    line-height: 1;
+    color: var(--accent-ink);
+    margin: 0 0 44px;
+  }
+
+  .open {
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+
+  .open-to {
+    margin: 6px 0 44px;
+    font-size: 1.02rem;
+    color: var(--ink-2);
+  }
+
+  .clock {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 0.82rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .clock .dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  /* Highlights */
+  .highlights {
+    border-top: 1px solid var(--line);
+  }
+
+  .hl-title {
+    font-size: clamp(2.2rem, 3.4vw + 1rem, 3.4rem);
+    letter-spacing: -0.06em;
+    margin-top: 14px;
+    max-width: 18ch;
+  }
+
+  .hl-grid {
+    list-style: none;
+    margin: clamp(36px, 5vw, 56px) 0 0;
+    padding: 0;
+    display: grid;
+    border-top: 1px solid var(--frame);
+    border-left: 1px solid var(--frame);
+  }
+
+  @media (min-width: 700px) {
+    .hl-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1080px) {
+    .hl-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .hl {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 28px;
+    border-right: 1px solid var(--frame);
+    border-bottom: 1px solid var(--frame);
+    transition: background-color 0.15s ease;
+  }
+
+  .hl:hover {
+    background: var(--accent-tint);
+  }
+
+  .hl .n {
+    font-size: 0.72rem;
+    color: var(--accent-ink);
+  }
+
+  .hl h3 {
+    font-size: 1.3rem;
+    letter-spacing: -0.045em;
+    line-height: 1.15;
+  }
+
+  .hl p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.96rem;
+  }
+
+  .hl-link {
+    margin-top: auto;
+    padding-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .hl-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .hl:has(.hl-link:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+
+  .hl-link:focus-visible {
+    outline: none;
+  }
+</style>

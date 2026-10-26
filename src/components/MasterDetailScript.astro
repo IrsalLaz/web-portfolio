@@ -1,0 +1,52 @@
+---
+// Progressive enhancement for master–detail blocks (design.md §5).
+// Markup: [data-md] > [role=tablist] > [role=tab][aria-controls] ... and [role=tabpanel][id].
+// Without JS every panel is visible in sequence.
+---
+
+<script>
+  function setup(root: HTMLElement) {
+    const tabs = [...root.querySelectorAll<HTMLElement>('[role="tab"]')];
+    const panels = tabs.map((t) => document.getElementById(t.getAttribute("aria-controls") ?? ""));
+    if (!tabs.length) return;
+
+    const select = (i: number, opts: { focus?: boolean; scroll?: boolean } = {}) => {
+      tabs.forEach((t, j) => {
+        const on = i === j;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        const p = panels[j];
+        if (p) p.hidden = !on;
+      });
+      if (opts.focus) tabs[i].focus();
+      const p = panels[i];
+      if (opts.scroll && p && window.matchMedia("(max-width: 959px)").matches) {
+        p.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      }
+    };
+
+    const fromHash = tabs.findIndex((t) => `#${t.dataset.key}` === location.hash);
+    select(fromHash >= 0 ? fromHash : 0);
+
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(i, { scroll: true }));
+      t.addEventListener("keydown", (e) => {
+        const last = tabs.length - 1;
+        const map: Record<string, number> = {
+          ArrowDown: i === last ? 0 : i + 1,
+          ArrowRight: i === last ? 0 : i + 1,
+          ArrowUp: i === 0 ? last : i - 1,
+          ArrowLeft: i === 0 ? last : i - 1,
+          Home: 0,
+          End: last,
+        };
+        if (e.key in map) {
+          e.preventDefault();
+          select(map[e.key], { focus: true });
+        }
+      });
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-md]").forEach(setup);
+</script>

@@ -1,0 +1,291 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getSkills } from "../data/skills";
+import { useTranslations, type Lang } from "../i18n/ui";
+import { localizePath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
+const skills = getSkills(lang);
+
+const slug = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+---
+
+<BaseLayout lang={lang} title={t("skills.title")} description={t("skills.desc")}>
+  <header class="container page-head">
+    <h1 class="page-title">{t("skills.title")}</h1>
+    <p class="lead">{t("skills.lead")}</p>
+  </header>
+
+  <section class="container" aria-label={t("skills.byCat")}>
+    <div class="skills-layout">
+      <div class="boxes">
+        {
+          skills.map((g) => (
+            <section class="gbox" aria-label={g.category}>
+              <div class="gbox-head">
+                <h2>{g.category}</h2>
+                <span class="gbox-count">{String(g.items.length).padStart(2, "0")}</span>
+              </div>
+              <ul class="cells">
+                {g.items.map((s) => {
+                  const id = `skill-${slug(g.category)}-${slug(s.name)}`;
+                  return (
+                    <li>
+                      <button
+                        class="cell"
+                        type="button"
+                        aria-pressed="false"
+                        aria-controls="skill-detail"
+                        data-skill={id}
+                      >
+                        {s.name}
+                      </button>
+                      <template id={id}>
+                        <p class="label label-accent">{g.category}</p>
+                        <h3 class="sd-title">{s.name}</h3>
+                        {s.note && <p class="sd-note">{s.note}</p>}
+                        <p class="label">{t("skills.usedIn")}</p>
+                        <ul class="sd-list">
+                          {s.usedIn.map((u) => (
+                            <li>{u.href ? <a href={u.href}>{u.label} →</a> : <span>{u.label}</span>}</li>
+                          ))}
+                        </ul>
+                      </template>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+
+      <div class="md-rule" aria-hidden="true"></div>
+
+      <aside class="detail" aria-label={t("skills.detail")}>
+        <div class="sd-box" id="skill-detail" aria-live="polite">
+          <div class="sd-empty">
+            <span class="plus" aria-hidden="true">+</span>
+            <p class="label">{t("skills.select")}</p>
+            <p>{t("skills.selectHint")}</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<noscript>
+  <style>
+    .detail {
+      display: none;
+    }
+  </style>
+</noscript>
+
+<script>
+  const box = document.getElementById("skill-detail");
+  const cells = [...document.querySelectorAll<HTMLButtonElement>(".cell")];
+  cells.forEach((cell) => {
+    cell.addEventListener("click", () => {
+      const tpl = document.getElementById(cell.dataset.skill ?? "") as HTMLTemplateElement | null;
+      if (!box || !tpl) return;
+      cells.forEach((c) => c.setAttribute("aria-pressed", String(c === cell)));
+      box.replaceChildren(tpl.content.cloneNode(true));
+      box.classList.add("filled");
+      if (window.matchMedia("(max-width: 959px)").matches) {
+        box.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+    });
+  });
+</script>
+
+<style>
+  .skills-layout {
+    display: grid;
+    gap: 32px;
+  }
+
+  @media (min-width: 960px) {
+    .skills-layout {
+      grid-template-columns: minmax(0, 1.7fr) 1px minmax(0, 1fr);
+      gap: 0 clamp(32px, 4vw, 56px);
+      align-items: start;
+    }
+    .md-rule {
+      align-self: stretch;
+      background: var(--line);
+    }
+    .detail {
+      position: sticky;
+      top: calc(var(--header-h) + 28px);
+    }
+  }
+
+  @media (max-width: 959px) {
+    .md-rule {
+      display: none;
+    }
+  }
+
+  .boxes {
+    display: grid;
+    gap: 18px;
+  }
+
+  @media (min-width: 700px) {
+    .boxes {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .cells {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cells li {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cells li:nth-child(odd) {
+    border-right: 1px solid var(--line);
+  }
+
+  .cells li:last-child,
+  .cells li:nth-last-child(2):nth-child(odd) {
+    border-bottom: 0;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 56px;
+    padding: 10px 16px;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .cell::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin-right: 12px;
+    flex: none;
+    border: 1px solid var(--faint);
+  }
+
+  .cell:hover {
+    background: color-mix(in srgb, var(--accent-tint) 60%, transparent);
+  }
+
+  .cell[aria-pressed="true"] {
+    background: var(--accent-tint);
+    color: var(--ink);
+  }
+
+  .cell[aria-pressed="true"]::before {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .sd-box {
+    min-height: 420px;
+    border: 1px solid var(--accent-line);
+    background: color-mix(in srgb, var(--accent-tint) 45%, var(--bg));
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (max-width: 959px) {
+    .sd-box {
+      min-height: 0;
+      padding: 20px;
+    }
+  }
+
+  .sd-box.filled {
+    justify-content: flex-start;
+    background: var(--bg);
+  }
+
+  .sd-empty {
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .sd-empty p:last-child {
+    margin: 10px auto 0;
+    max-width: 28ch;
+  }
+
+  .plus {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 18px;
+    border: 1px solid var(--accent-line);
+    color: var(--accent-ink);
+    font-family: var(--font-mono);
+  }
+
+  .sd-box :global(.sd-title) {
+    font-size: clamp(2rem, 2vw + 1rem, 2.6rem);
+    letter-spacing: -0.06em;
+    margin: 10px 0 8px;
+  }
+
+  .sd-box :global(.sd-note) {
+    color: var(--muted);
+    margin: 0 0 22px;
+  }
+
+  .sd-box :global(.sd-list) {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .sd-box :global(.sd-list li) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sd-box :global(.sd-list a),
+  .sd-box :global(.sd-list span) {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+
+  .sd-box :global(.sd-list a:hover) {
+    color: var(--accent-ink);
+  }
+</style>

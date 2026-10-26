@@ -1,0 +1,48 @@
+---
+title: Cross-App Claim Disbursement
+category: Integration · Payroll
+order: 4
+summary: Connecting the group's HRMS app to Duluin's disbursement pipeline, so approved employee claims are paid automatically and their status flows back.
+description: A high-level summary of an OAuth2-secured claim API in Go with idempotent requests and approval steps, built on an existing disbursement pipeline.
+card:
+  problem: Claims approved by HR in the group's HRMS app needed a secure, automated path to payment, with their status sent back.
+  role: Person in charge (PIC)
+  tech: [Go, Laravel, OAuth2, Horizon]
+  highlight: An OAuth2-secured intake API with idempotent claim IDs, built on the existing disbursement pipeline instead of a new one.
+facts:
+  - label: Role
+    value: Person in charge (PIC); designed and implemented the integration
+  - label: Systems
+    value: The group's HRMS app, a Go service and the Laravel admin dashboard
+  - label: Stack
+    value: Go, Laravel, MySQL, Redis queues (Horizon), OAuth2
+---
+
+## Overview
+
+Employees file reimbursement claims in the group's HRMS app, where HR approves them. This integration takes approved claims, runs them through approval, pays them through Duluin's existing disbursement pipeline and reports each claim's status back.
+
+## My contribution
+
+- As PIC, designed the integration contract, the claim lifecycle and the approval flow.
+- Implemented it across a Go service and the Laravel dashboard.
+- Applied the team's security practices: OAuth2 client credentials with scopes, and role-based permissions on every approval step.
+- Reused the existing disbursement pipeline instead of building a separate payment path.
+
+## Skills applied
+
+- **Integration design.** A contract and claim lifecycle agreed between two applications owned by different teams.
+- **OAuth2.** Client credentials with scopes, later moved to tenant API keys validated by the auth service (see [Auth & API Security](/projects/api-security)).
+- **Idempotency.** Each claim carries a unique external ID and is created inside a database transaction, so a retried request can't create a second claim.
+- **Concurrency control.** Row-level locks prevent two people from approving the same claim at once.
+- **Reuse over rebuild.** Small adapters connect claims to the existing disbursement pipeline, so claims inherit its queues and audit trail.
+- **Resilient callbacks.** The status callback retries, and a failed callback is logged without ever rolling back a completed transfer.
+
+## Outcome
+
+- Claims approved in the HRMS app reach employees' bank accounts through an automated, audited flow, with status reported back.
+- Partner companies can review claims before they are paid.
+
+## Tech stack
+
+Go · Laravel, Sanctum, Spatie Permission, Horizon · MySQL · Redis · OAuth2

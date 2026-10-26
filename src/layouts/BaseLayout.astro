@@ -1,0 +1,87 @@
+---
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/space-grotesk/500.css";
+import "@fontsource/space-grotesk/600.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+import "../styles/global.css";
+import "../styles/diagrams.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { site, copy } from "../data/site";
+import { useTranslations, type Lang } from "../i18n/ui";
+import { alternatePath, getLangFromUrl } from "../i18n/utils";
+
+interface Props {
+  lang?: Lang;
+  title?: string;
+  description?: string;
+  ogType?: "website" | "article";
+  noindex?: boolean;
+}
+
+const { lang = getLangFromUrl(Astro.url), title, description: desc, ogType = "website", noindex = false } = Astro.props;
+const t = useTranslations(lang);
+const description = desc ?? copy[lang].description;
+const altEn = new URL(alternatePath(Astro.url, "en"), site.url).toString();
+const altId = new URL(alternatePath(Astro.url, "id"), site.url).toString();
+const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.title}`;
+const canonical = new URL(Astro.url.pathname, site.url).toString();
+const ogImage = new URL("/og.png", site.url).toString();
+---
+
+<!doctype html>
+<html lang={lang} class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={site.name} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={altEn} />
+    <link rel="alternate" hreflang="id" href={altId} />
+    <link rel="alternate" hreflang="x-default" href={altEn} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <meta name="theme-color" content="#f7f7f5" />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:locale" content={t("meta.locale")} />
+    <meta property="og:locale:alternate" content={lang === "en" ? "id_ID" : "en_US"} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title ? fullTitle : `${site.name} · ${site.title}`} />
+    <meta property="og:description" content={title ? description : site.ogDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${site.name} — ${site.title}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title ? fullTitle : `${site.name} · ${site.title}`} />
+    <meta name="twitter:description" content={title ? description : site.ogDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.remove("no-js");
+        try {
+          if (localStorage.getItem("theme") === "dark") d.setAttribute("data-theme", "dark");
+        } catch (e) {}
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{t("skip")}</a>
+    <Header lang={lang} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>

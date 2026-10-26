@@ -1,0 +1,269 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import MasterDetailScript from "../components/MasterDetailScript.astro";
+import { moreWork } from "../data/moreWork";
+import { useTranslations, type Lang } from "../i18n/ui";
+import { localizePath } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
+const slugOf = (id: string) => id.split("/")[1];
+
+const projects = (await getCollection("projects", (e) => e.id.startsWith(`${lang}/`))).sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout lang={lang} title={t("proj.title")} description={t("proj.desc")}>
+  <header class="container page-head">
+    <h1 class="page-title">{t("proj.title")}</h1>
+    <p class="lead">{t("proj.lead")}</p>
+  </header>
+
+  <section class="container" aria-label={t("proj.list")}>
+    <div class="md" data-md>
+      <ul class="md-list" role="tablist" aria-orientation="vertical" aria-label={t("proj.list")}>
+        {
+          projects.map((p, i) => (
+            <li role="presentation">
+              <button
+                class="md-item proj-item"
+                role="tab"
+                id={`tab-${slugOf(p.id)}`}
+                data-key={slugOf(p.id)}
+                aria-selected={i === 0 ? "true" : "false"}
+                aria-controls={`panel-${slugOf(p.id)}`}
+                tabindex={i === 0 ? 0 : -1}
+              >
+                <span class="label label-cat">{p.data.category}</span>
+                <span class="md-title">{p.data.title}</span>
+                <span class="techs" aria-hidden="true">
+                  {p.data.card.tech.map((tech) => (
+                    <span class="t">{tech}</span>
+                  ))}
+                </span>
+                <span class="arrow" aria-hidden="true">
+                  →
+                </span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="md-rule" aria-hidden="true"></div>
+
+      <div class="md-detail">
+        {
+          projects.map((p) => {
+            return (
+              <article class="panel" role="tabpanel" id={`panel-${slugOf(p.id)}`} aria-labelledby={`tab-${slugOf(p.id)}`} tabindex="0">
+                <div class="panel-top">
+                  <div>
+                    <p class="label label-accent">{p.data.category}</p>
+                    <h2 class="panel-title">{p.data.title}</h2>
+                  </div>
+                  <div class="panel-actions">
+                    {p.data.status && (
+                      <span class="chip">
+                        <span class="dot" aria-hidden="true" />
+                        {p.data.status}
+                      </span>
+                    )}
+                    <a class="btn" href={L(`/projects/${slugOf(p.id)}`)}>
+                      {t("proj.caseStudy")} <span aria-hidden="true">↗</span>
+                      <span class="visually-hidden">: {p.data.title}</span>
+                    </a>
+                  </div>
+                </div>
+                <div class="panel-body">
+                  <p class="summary">{p.data.summary}</p>
+                  <dl class="facts">
+                    <div>
+                      <dt class="label">{t("proj.problem")}</dt>
+                      <dd>{p.data.card.problem}</dd>
+                    </div>
+                    <div>
+                      <dt class="label">{t("proj.role")}</dt>
+                      <dd>{p.data.card.role}</dd>
+                    </div>
+                    <div>
+                      <dt class="label">{t("proj.highlight")}</dt>
+                      <dd>{p.data.card.highlight}</dd>
+                    </div>
+                  </dl>
+                  <ul class="techs" aria-label={t("proj.keyTech")}>
+                    {p.data.card.tech.map((tech) => (
+                      <li>{tech}</li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="container section more" id="more-work" aria-labelledby="more-title">
+    <p class="label label-accent">{t("proj.alsoBuilt")}</p>
+    <h2 id="more-title" class="more-title">{t("proj.moreWork")}</h2>
+    <ul class="more-grid">
+      {
+        moreWork[lang].map((m, i) => (
+          <li class="more-cell">
+            <div class="more-head">
+              <span class="n mono">{String(i + 1).padStart(2, "0")}</span>
+              <span class="label">{m.role}</span>
+            </div>
+            <h3>{m.title}</h3>
+            <p>{m.body}</p>
+            <ul class="techs" aria-label={t("exp.tech")}>
+              {m.tech.map((tech) => (
+                <li>{tech}</li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <MasterDetailScript />
+</BaseLayout>
+
+<style>
+  .proj-item {
+    position: relative;
+    padding-right: 64px;
+  }
+
+  .proj-item .techs {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .proj-item .t {
+    padding-inline: 12px;
+    border-left: 1px solid var(--line);
+    line-height: 1.2;
+  }
+
+  .proj-item .t:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .arrow {
+    position: absolute;
+    right: 28px;
+    top: 30px;
+    font-size: 1.3rem;
+    color: var(--faint);
+    transition: transform 0.15s ease;
+  }
+
+  .proj-item[aria-selected="true"] .arrow {
+    color: var(--accent-ink);
+    transform: translateX(4px);
+  }
+
+  .panel-top {
+    display: grid;
+    gap: 18px;
+    padding: clamp(24px, 3vw, 36px) clamp(24px, 3vw, 36px) 0;
+  }
+
+  .panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .summary {
+    font-size: 1.08rem;
+    color: var(--ink-2) !important;
+  }
+
+  .facts {
+    display: grid;
+    gap: 16px;
+    margin: 22px 0 26px;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .facts dd {
+    margin: 4px 0 0;
+    color: var(--ink-2);
+  }
+
+  /* More work */
+  .more {
+    border-top: 1px solid var(--line);
+    margin-top: clamp(64px, 9vw, 120px);
+  }
+
+  .more-title {
+    font-size: clamp(2.2rem, 3vw + 1rem, 3.2rem);
+    letter-spacing: -0.06em;
+    margin: 12px 0 36px;
+  }
+
+  .more-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    border-top: 1px solid var(--frame);
+    border-left: 1px solid var(--frame);
+  }
+
+  @media (min-width: 760px) {
+    .more-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .more-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 28px;
+    border-right: 1px solid var(--frame);
+    border-bottom: 1px solid var(--frame);
+  }
+
+  .more-head {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .more-head .n {
+    font-size: 0.72rem;
+    color: var(--accent-ink);
+  }
+
+  .more-cell h3 {
+    font-size: 1.5rem;
+    letter-spacing: -0.05em;
+  }
+
+  .more-cell p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.97rem;
+  }
+
+  .more-cell .techs {
+    margin-top: auto;
+    padding-top: 8px;
+  }
+</style>

@@ -1,0 +1,289 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { cv } from "../data/cv";
+import { site } from "../data/site";
+---
+
+<BaseLayout title="CV" description={`CV of ${site.name}, ${site.title}. ${cv.summary}`}>
+  <div class="container cv-wrap">
+    <div class="cv-actions no-print">
+      <h1 class="label label-accent">Curriculum vitae</h1>
+      <div class="buttons">
+        <a class="btn" href={site.cv.pdf} download>Download PDF <span aria-hidden="true">↓</span></a>
+        <a class="btn btn-outline" href={site.cv.docx} download>Download DOCX <span aria-hidden="true">↓</span></a>
+        <button class="btn btn-outline" type="button" data-print>Print</button>
+      </div>
+    </div>
+
+    <article class="sheet" aria-label={`CV of ${cv.name}`}>
+      <header class="cv-head">
+        <h2 class="cv-name">{cv.name}</h2>
+        <p class="cv-headline">{cv.headline}</p>
+        <ul class="cv-contacts">
+          {
+            cv.contacts.map((c) => (
+              <li>
+                <span class="cv-label">{c.label}:</span>{" "}
+                {c.href ? <a href={c.href}>{c.value}</a> : <span>{c.value}</span>}
+              </li>
+            ))
+          }
+        </ul>
+      </header>
+
+      <section>
+        <h2>Summary</h2>
+        <p>{cv.summary}</p>
+      </section>
+
+      <section>
+        <h2>Skills</h2>
+        <ul class="cv-skills">
+          {
+            cv.skills.map((s) => (
+              <li>
+                <strong>{s.label}:</strong> {s.value}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section>
+        <h2>Experience</h2>
+        {
+          cv.experience.map((r) => (
+            <div class="cv-role">
+              <p class="cv-role-head">
+                <span><strong>{r.title}</strong> — {r.company}, {r.location}</span>
+                <span class="cv-period">{r.period}</span>
+              </p>
+              <ul>
+                {r.bullets.map((b) => (
+                  <li>{b}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </section>
+
+      <section>
+        <h2>Selected Projects</h2>
+        <ul>
+          {
+            cv.projects.map((p) => (
+              <li>
+                <strong><a href={p.url}>{p.name}</a></strong> — {p.description}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section>
+        <h2>Education</h2>
+        <p class="cv-role-head">
+          <span><strong>{cv.education.degree}</strong> — {cv.education.school}</span>
+          <span class="cv-period">{cv.education.period}</span>
+        </p>
+      </section>
+
+      <section>
+        <h2>Certifications</h2>
+        <p>{cv.certifications}</p>
+      </section>
+    </article>
+  </div>
+</BaseLayout>
+
+<script>
+  document.querySelector("[data-print]")?.addEventListener("click", () => window.print());
+</script>
+
+<style>
+  .cv-wrap {
+    padding-block: clamp(28px, 5vw, 56px) clamp(48px, 7vw, 88px);
+  }
+
+  .cv-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 210mm;
+    margin: 0 auto 20px;
+  }
+
+  .cv-actions h1 {
+    margin: 0;
+  }
+
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* The sheet always renders light, like paper. */
+  .sheet {
+    --ink: #15181c;
+    --ink-muted: #3d444c;
+    --rule: #c9cdd2;
+    --link: #0b5a54;
+    max-width: 210mm;
+    margin: 0 auto;
+    background: #ffffff;
+    color: var(--ink);
+    border: 1px solid var(--frame);
+    padding: clamp(20px, 5vw, 15mm) clamp(18px, 5vw, 16mm);
+    font-size: 10pt;
+    line-height: 1.42;
+  }
+
+  .sheet .cv-name {
+    font-size: 19pt;
+    letter-spacing: -0.01em;
+  }
+
+  .cv-headline {
+    margin: 2px 0 6px;
+    font-size: 11pt;
+    color: var(--ink-muted);
+  }
+
+  .sheet .cv-contacts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+    font-size: 9pt;
+  }
+
+  .cv-label {
+    color: var(--ink-muted);
+  }
+
+  .sheet a {
+    color: var(--link);
+    text-decoration: none;
+    word-break: break-word;
+  }
+
+  .sheet section h2 {
+    font-size: 10.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 11px 0 5px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .sheet p {
+    margin: 0 0 4px;
+  }
+
+  .sheet ul {
+    margin: 0 0 4px;
+    padding-left: 14px;
+  }
+
+  .sheet li {
+    margin-bottom: 2px;
+  }
+
+  .sheet .cv-skills {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .cv-role {
+    margin-bottom: 6px;
+  }
+
+  .cv-role-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 12px;
+    margin-bottom: 2px !important;
+  }
+
+  .cv-period {
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
+  @media print {
+    @page {
+      size: A4;
+      margin: 10mm 12mm;
+    }
+
+    .sheet {
+      font-size: 9.2pt;
+      line-height: 1.34;
+    }
+
+    .sheet .cv-name {
+      font-size: 17pt;
+    }
+
+    .cv-headline {
+      font-size: 10pt;
+      margin: 0 0 3px;
+    }
+
+    .cv-contacts {
+      font-size: 8.4pt;
+    }
+
+    .sheet section h2 {
+      font-size: 9.6pt;
+      margin: 7px 0 3px;
+    }
+
+    .sheet li {
+      margin-bottom: 1px;
+    }
+
+    .cv-role {
+      margin-bottom: 3px;
+    }
+
+    :global(.site-header),
+    :global(.site-footer),
+    :global(.skip-link),
+    .no-print {
+      display: none !important;
+    }
+
+    :global(body) {
+      background: #ffffff !important;
+    }
+
+    :global(main) {
+      padding-top: 0 !important;
+    }
+
+    .cv-wrap {
+      padding: 0;
+      max-width: none;
+    }
+
+    .sheet {
+      max-width: none;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+    }
+
+    .cv-role,
+    .sheet li {
+      break-inside: avoid;
+    }
+  }
+</style>

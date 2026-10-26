@@ -1,0 +1,46 @@
+---
+title: "Mesin Kampanye & Reward"
+category: "Produk · Mesin reward"
+order: 5
+summary: "Satu rule engine untuk voucher, cashback, referral, dan pemberian poin, yang bisa ditargetkan per perusahaan klien dan aman dari pemberian reward untuk transaksi yang gagal."
+description: "Ringkasan tingkat tinggi dari mesin kampanye untuk aplikasi earned wage access — satu rule engine, cashback dua fase, aturan anti-penyalahgunaan referral, dan pemberian poin massal yang bisa dilanjutkan."
+card:
+  problem: "Tim marketing membutuhkan voucher, cashback, referral, dan pemberian poin yang ditargetkan per perusahaan klien, dengan kuota dan batas per pengguna."
+  role: "Merancang dan membangun sebagai anggota tim"
+  tech: [Laravel, MySQL, Redis queues]
+  highlight: "Satu rule engine untuk semua jenis kampanye, dan cashback baru dikreditkan setelah penarikan berhasil."
+facts:
+  - label: "Peran"
+    value: "Merancang dan membangun sebagai anggota tim (pekerjaan dimulai saat masa magang saya)"
+  - label: "Produk"
+    value: "Duluin Gajian (aplikasi earned wage access)"
+  - label: "Stack"
+    value: "Laravel, MySQL, Redis queues (Horizon)"
+---
+
+## Ringkasan
+
+Duluin Gajian memungkinkan karyawan menarik sebagian gaji yang sudah mereka hasilkan lebih awal dan membayar tagihan di aplikasi. Mesin kampanye memungkinkan tim marketing dan operasional menjalankan promosi — voucher, cashback, program referral, dan pemberian poin massal — untuk perusahaan klien tertentu, tanpa bantuan engineering.
+
+## Kontribusi saya
+
+- Merancang dan membangun mesin kampanye sebagai bagian dari tim, dimulai saat masa magang saya.
+- Mengimplementasikan jenis-jenis kampanye, penargetannya, dan ledger poin di baliknya.
+
+## Keahlian yang diterapkan
+
+- **Desain rule engine.** Setiap jenis kampanye melewati pengecekan yang sama: periode aktif, kuota total, batas per pengguna, nominal minimum, dan jenis produk.
+- **Reward dua fase.** Pemakaian dicatat saat transaksi diajukan, dan reward baru dikreditkan setelah transaksi berhasil, sehingga transaksi yang gagal tidak mendapat apa-apa.
+- **Pencegahan penyalahgunaan.** Aturan referral memblokir pemakaian kode sendiri dan penukaran berulang.
+- **Job massal yang bisa dilanjutkan.** Pemberian poin massal berjalan sebagai queued job yang melanjutkan dari titik berhenti jika terputus.
+- **Auditabilitas.** Ledger poin mencatat setiap kredit dan debit beserta status dan masa berlakunya.
+- **Kontrol akses.** Aksi pengelolaan kampanye dilindungi permission berbasis peran.
+
+## Hasil
+
+- Tim marketing dan operasional bisa menjalankan promosi yang tertarget tanpa bantuan engineering.
+- Setiap pemakaian, referral, dan pergerakan poin tercatat, sehingga reward bisa diaudit.
+
+## Tech stack
+
+Laravel, Sanctum, Spatie Permission · MySQL · Redis queues (Horizon)

@@ -1,0 +1,290 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+import { useTranslations, type Lang } from "../i18n/ui";
+import { alternatePath, localizePath, stripLang } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const links = [
+  { href: "/experience", label: t("nav.experience") },
+  { href: "/projects", label: t("nav.projects") },
+  { href: "/skills", label: t("nav.skills") },
+  { href: "/about", label: t("nav.about") },
+  { href: "/contact", label: t("nav.contact") },
+];
+const base = stripLang(Astro.url.pathname).replace(/\/$/, "") || "/";
+const isActive = (href: string) => base === href || base.startsWith(`${href}/`);
+const L = (href: string) => localizePath(href, lang);
+const langs: { code: Lang; label: string; name: string }[] = [
+  { code: "en", label: "EN", name: "English" },
+  { code: "id", label: "ID", name: "Bahasa Indonesia" },
+];
+---
+
+<header class="site-header">
+  <div class="bar">
+    <a href={L("/")} class="brand" aria-label={`Irsal Lazuard — ${t("nav.home")}`}>Irsal<span aria-hidden="true">.</span></a>
+
+    <nav aria-label="Primary" class="seg">
+      <ul>
+        {
+          links.map((l) => (
+            <li>
+              <a href={L(l.href)} aria-current={isActive(l.href) ? "page" : undefined}>
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="actions">
+      <a class="pill pill-solid talk" href={L("/contact")}>{t("nav.talk")}</a>
+      <div class="lang" role="group" aria-label={t("nav.lang")}>
+        {
+          langs.map((l) => (
+            <a
+              href={alternatePath(Astro.url, l.code)}
+              hreflang={l.code}
+              lang={l.code}
+              aria-current={l.code === lang ? "true" : undefined}
+              title={l.name}
+            >
+              <span aria-hidden="true">{l.label}</span>
+              <span class="visually-hidden">{l.name}</span>
+            </a>
+          ))
+        }
+      </div>
+      <ThemeToggle label={t("theme.dark")} />
+      <details class="menu">
+        <summary aria-label={t("nav.menu")}>
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"
+            ><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.8"></path></svg
+          >
+        </summary>
+        <nav aria-label="Primary (mobile)" class="menu-panel">
+          <ul>
+            <li><a href={L("/")}>{t("nav.home")}</a></li>
+            {
+              links.map((l) => (
+                <li>
+                  <a href={L(l.href)} aria-current={isActive(l.href) ? "page" : undefined}>
+                    {l.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li><a href="/cv">{t("nav.cv")}</a></li>
+          </ul>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLDetailsElement>(".menu").forEach((d) => {
+    d.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => d.removeAttribute("open")));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && d.open) {
+        d.removeAttribute("open");
+        d.querySelector("summary")?.focus();
+      }
+    });
+  });
+</script>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: var(--header-h);
+    padding-inline: var(--pad);
+    max-width: 1440px;
+    margin-inline: auto;
+  }
+
+  .brand {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.9rem;
+    letter-spacing: -0.04em;
+    text-decoration: none;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .brand span {
+    color: var(--accent);
+  }
+
+  .seg ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--frame);
+  }
+
+  .seg a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 18px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--muted);
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .seg a:hover {
+    color: var(--ink);
+    background: var(--accent-tint);
+  }
+
+  .seg a[aria-current="page"] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .lang {
+    display: flex;
+    border: 1px solid var(--frame);
+  }
+
+  .lang a {
+    display: grid;
+    place-items: center;
+    min-width: 40px;
+    height: 42px;
+    padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    color: var(--muted);
+  }
+
+  .lang a + a {
+    border-left: 1px solid var(--frame);
+  }
+
+  .lang a:hover {
+    color: var(--ink);
+    background: var(--accent-tint);
+  }
+
+  .lang a[aria-current="true"] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .menu {
+    display: none;
+    position: relative;
+  }
+
+  .menu summary {
+    list-style: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--frame);
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu[open] summary {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .menu-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--header-h);
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--frame);
+    padding: 8px var(--pad) 20px;
+  }
+
+  .menu-panel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .menu-panel a {
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-2);
+  }
+
+  .menu-panel a[aria-current="page"] {
+    color: var(--accent-ink);
+  }
+
+  @media (max-width: 1180px) {
+    .seg a {
+      padding: 0 12px;
+      letter-spacing: 0.12em;
+    }
+  }
+
+  @media (max-width: 1060px) {
+    .seg {
+      display: none;
+    }
+    .menu {
+      display: block;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .talk {
+      display: none;
+    }
+  }
+</style>
